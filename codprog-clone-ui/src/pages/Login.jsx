@@ -2,6 +2,26 @@ import React from "react";
 import { Form, redirect, useActionData } from "react-router-dom";
 import axios from "axios";
 import { SUPABASE_API_KEY, LOGIN_URL } from "../constants";
+import { accessListify } from "ethers";
+
+export async function loginLoader() {
+  if ("user" in localStorage) {
+    // console.log("user already loggined");
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    console.log(user);
+    if (
+      "id" in user &&
+      "access_token" in user &&
+      "refresh_token" in user &&
+      "expires_at" in user
+    ) {
+      return redirect("/home");
+    }
+  }
+
+  return null;
+}
 
 // export function loginAction() {
 //   console.log("Running ActionLogin");
@@ -37,10 +57,28 @@ export async function loginAction({ request, params }) {
       },
     });
     console.log("response : ", response);
-    const { access_token, refresh_token, expires_at } = response.data;
-    const user = { access_token, refresh_token, expires_at };
+    const {
+      access_token,
+      refresh_token,
+      expires_at,
+      user: { id },
+    } = response.data;
+    const user = { access_token, refresh_token, expires_at, id };
+
+    localStorage.setItem("user", JSON.stringify(user));
+    //                   or
+    // sessionStorage.setItem("user", JSON.stringify(user));
+
+    // we prefer HTTPONLY COOKIES instead of local or session storage if we are building
+    // our own backend using node, python or java. HTTPONLY COOKIES make sites more secure
+    // as we can't access  javascript of site when httponly cookies are used.
+
     return redirect("/");
   } catch (error) {
+    localStorage.removeItem("user");
+    //        or
+    // sessionStorage.removeItem("user");
+
     if (error.response.status === 400) console.log("Wrong email or password");
     else {
       return { error: error?.response?.data?.message || error.message };
@@ -69,7 +107,7 @@ export default function Login() {
 
   // return { error: "Wrong username or password" };
 
-  // This object becomes accessible in the component via useActionData() 
+  // This object becomes accessible in the component via useActionData()
   // so you can show error messages to the user.
 
   console.log(data);
@@ -101,7 +139,8 @@ export default function Login() {
         </div>
       </Form>
       {data && data.error && <p>{data.error}</p>}
-      {/* <p>{data?.error}</p>  */}  {/*will leave an empty <p> in browser inspect>>Element section */}
+      {/* <p>{data?.error}</p>  */}{" "}
+      {/*will leave an empty <p> in browser inspect>>Element section */}
     </div>
   );
 }
