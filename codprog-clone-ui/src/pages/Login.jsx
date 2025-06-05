@@ -53,7 +53,25 @@ export async function loginAction({ request, params }) {
 }
 
 export default function Login() {
-  const data = useActionData();
+  const data = useActionData(); //useActionData() is a hook provided by
+  // React Router (v6.4 and above), and it's used in loader/action-based data fetching
+  //  — typically when working with form submissions in a route.
+
+  // Why it's used:
+  // 1). To capture response from the server/action:
+  // When a form is submitted (like your login form), an action function
+  // (defined in the route config or in the file-based routing setup) handles
+  // the logic — such as authentication, database calls, etc.
+
+  // 2). To handle errors or messages on the UI:
+  // For example, if login fails (e.g., wrong password), the action can return
+  // an object like
+
+  // return { error: "Wrong username or password" };
+
+  // This object becomes accessible in the component via useActionData() 
+  // so you can show error messages to the user.
+
   console.log(data);
   return (
     <div>
@@ -82,8 +100,8 @@ export default function Login() {
           <input type="submit" value="Login" />
         </div>
       </Form>
-      {/* {data && data.error && <p>{data.error}</p>} */}
-      <p>{data?.error}</p>
+      {data && data.error && <p>{data.error}</p>}
+      {/* <p>{data?.error}</p>  */}  {/*will leave an empty <p> in browser inspect>>Element section */}
     </div>
   );
 }
