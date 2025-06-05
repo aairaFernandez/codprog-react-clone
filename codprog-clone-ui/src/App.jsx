@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 import { About, Home, Login, MyCourses, Signup } from "./pages/Index";
+import { loginAction } from "./pages/Login.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(

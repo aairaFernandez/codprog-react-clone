@@ -1,5 +1,7 @@
 import React from "react";
-import { Form } from "react-router-dom";
+import { Form, redirect, useActionData } from "react-router-dom";
+import axios from "axios";
+import { SUPABASE_API_KEY, LOGIN_URL } from "../constants";
 
 // export function loginAction() {
 //   console.log("Running ActionLogin");
@@ -10,24 +12,49 @@ import { Form } from "react-router-dom";
 // }
 
 export async function loginAction({ request, params }) {
-  console.log("params : ", params); // right now not needed
-  console.log("request : ", request); // it helps us to get the formData,
+  // console.log("params : ", params); // right now not needed
+  // console.log("request : ", request); // it helps us to get the formData,
   //  using request.formData(), It returns a promise.
+
   const data = await request.formData(); //as it returns promise....
   // in resolving promise, it takes some time,so we are using await and async.
+
   console.log("data : ", data);
-  console.log(data.get("email")); //when we are using this form component from RRD,
-  console.log(data.get("password")); //we need use name attribute with all inputs.
+  // console.log(data.get("email")); //when we are using this form component from RRD,
+  // console.log(data.get("password")); //we need use name attribute with all inputs.
+
   const credentials = {
     email: data.get("email"),
     password: data.get("password"),
   };
-  console.log("credentials : ", credentials);
+  // console.log("credentials : ", credentials);
 
-  return null;
+  try {
+    const response = await axios.post(LOGIN_URL, JSON.stringify(credentials), {
+      headers: {
+        apikey: SUPABASE_API_KEY,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("response : ", response);
+    const { access_token, refresh_token, expires_at } = response.data;
+    const user = { access_token, refresh_token, expires_at };
+    return redirect("/");
+  } catch (error) {
+    if (error.response.status === 400) console.log("Wrong email or password");
+    else {
+      return { error: error?.response?.data?.message || error.message };
+    }
+  }
+
+  // console.log(response);
+
+  // return null;
 }
 
 export default function Login() {
+  const data = useActionData();
+  console.log(data);
   return (
     <div>
       {/* <Form method="POST"></Form> */}
@@ -55,6 +82,8 @@ export default function Login() {
           <input type="submit" value="Login" />
         </div>
       </Form>
+      {/* {data && data.error && <p>{data.error}</p>} */}
+      <p>{data?.error}</p>
     </div>
   );
 }
