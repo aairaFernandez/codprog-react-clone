@@ -10,7 +10,7 @@ function RootLayout() {
         </h2>
         <ul>
           <li>
-            <NavLink to="/Home">Home</NavLink>
+            <NavLink to="/Profile">Profile</NavLink>
           </li>
           <li>
             <NavLink to="/About">About</NavLink>

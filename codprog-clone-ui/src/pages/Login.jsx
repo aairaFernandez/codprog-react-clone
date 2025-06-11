@@ -1,28 +1,39 @@
 import React from "react";
-import { Form, redirect, useActionData } from "react-router-dom";
+import {
+  Form,
+  redirect,
+  useActionData,
+  useLocation,
+  useNavigation,
+} from "react-router-dom";
 import axios from "axios";
 import { SUPABASE_API_KEY, LOGIN_URL } from "../constants";
-import { accessListify } from "ethers";
+import { getUser } from "../utils/getUser";
 
-export async function loginLoader() {  //don't forget to link loginLoader function in login route 
-  if ("user" in localStorage) {  // "user" is a key in localStorage 
-    // console.log("user already loggined");
+export async function loginLoader() {
+  // //don't forget to link loginLoader function in login route
+  // if ("user" in localStorage) {
+  //   // "user" is a key in localStorage
+  //   // console.log("user already loggined");
 
-    const user = JSON.parse(localStorage.getItem("user"));
+  //   const user = JSON.parse(localStorage.getItem("user"));
 
-    console.log(user);
-    if (
-      "id" in user &&    // need to check all key of user object(line 11) 
-      // {"id", "access_token", "refresh_token", "expires_at"} in string keys with "" 
-      "access_token" in user &&
-      "refresh_token" in user &&
-      "expires_at" in user
-    ) {
-      return redirect("/home");
-    }
-  }
+  //   console.log(user);
+  //   if (
+  //     "id" in user && // need to check all key of user object(line 11)
+  //     // {"id", "access_token", "refresh_token", "expires_at"} in string keys with ""
+  //     "access_token" in user &&
+  //     "refresh_token" in user &&
+  //     "expires_at" in user
+  //   ) {
+  //     return redirect("/home");
+  //   }
+  // }
 
-  return null;
+  const user = await getUser();
+  if (user === null) {
+    return null;
+  } else return redirect("/");
 }
 
 // export function loginAction() {
@@ -75,7 +86,11 @@ export async function loginAction({ request, params }) {
     // our own backend using node, python or java. HTTPONLY COOKIES make sites more secure
     // as we can't access  javascript of site when httponly cookies are used.
 
-    return redirect("/");
+    // for making MyCourse Protected route
+    const redirectTo = new URL(request.url).searchParams.get("redirectTo");
+    console.log("redirectTo : ", redirectTo);
+
+    return redirect(redirectTo);
   } catch (error) {
     localStorage.removeItem("user");
     //        or
@@ -113,10 +128,21 @@ export default function Login() {
   // so you can show error messages to the user.
 
   console.log(data);
+
+  const location = useLocation(); // to bring the `login?redirectTo=${redirectTo}` to this file.
+  console.log("location : ", location);
+  const loginURL = location.pathname + location.search;
+
+  const navigation = useNavigation();
+  console.log("navigation : ", navigation);
+  const isSubmitting = navigation.state === "submitting";
+
   return (
     <div>
-      {/* <Form method="POST"></Form> */}
-      <Form method="post" action="/login">
+      {/* <Form method="POST"></Form>       OR*/}
+      <Form method="post" action={loginURL} replace>
+        {/* this "replace" attribute helps in removing login page in back arrow histor, if the use login successfully and brings you to a page before then login screen */}
+
         <h3>Login Page</h3>
         <div>
           <input
@@ -137,7 +163,11 @@ export default function Login() {
           />
         </div>
         <div>
-          <input type="submit" value="Login" />
+          <input
+            type="submit"
+            value={isSubmitting ? "Submitting...." : "Login"}
+            disabled={isSubmitting}
+          />
         </div>
       </Form>
       {data && data.error && <p>{data.error}</p>}

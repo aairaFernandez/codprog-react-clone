@@ -5,8 +5,10 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
-import { About, Home, Login, MyCourses, Signup } from "./pages/Index";
+import { About, Profile, Login, MyCourses, Signup } from "./pages/Index";
 import { loginAction, loginLoader } from "./pages/Login.jsx";
+import { myCourseLoader } from "./pages/MyCourses.jsx";
+import { profileLoader } from "./pages/Profile.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -19,8 +21,12 @@ const router = createBrowserRouter(
         action={loginAction}
         loader={loginLoader}
       />
-      <Route path="/Home" element={<Home />} />
-      <Route path="/MyCourses" element={<MyCourses />} />
+      <Route path="/Profile" element={<Profile />} loader={profileLoader} />
+      <Route
+        path="/MyCourses"
+        element={<MyCourses />}
+        loader={myCourseLoader}
+      />
     </Route>
   )
 );
