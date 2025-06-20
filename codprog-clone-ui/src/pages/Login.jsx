@@ -5,6 +5,7 @@ import {
   useActionData,
   useLocation,
   useNavigation,
+  useRouteLoaderData,
 } from "react-router-dom";
 import axios from "axios";
 import { SUPABASE_API_KEY, LOGIN_URL } from "../constants";
@@ -46,7 +47,7 @@ export async function loginLoader() {
 
 export async function loginAction({ request, params }) {
   // console.log("params : ", params); // right now not needed
-  // console.log("request : ", request); // it helps us to get the formData,
+  console.log("request : ", request); // it helps us to get the formData,
   //  using request.formData(), It returns a promise.
 
   const data = await request.formData(); //as it returns promise....
@@ -60,7 +61,7 @@ export async function loginAction({ request, params }) {
     email: data.get("email"),
     password: data.get("password"),
   };
-  // console.log("credentials : ", credentials);
+  console.log("credentials : ", credentials);
 
   try {
     const response = await axios.post(LOGIN_URL, JSON.stringify(credentials), {
@@ -78,6 +79,8 @@ export async function loginAction({ request, params }) {
     } = response.data;
     const user = { access_token, refresh_token, expires_at, id };
 
+    console.log("Login's user.access_token : ", user.access_token);
+
     localStorage.setItem("user", JSON.stringify(user));
     //                   or
     // sessionStorage.setItem("user", JSON.stringify(user));
@@ -87,7 +90,8 @@ export async function loginAction({ request, params }) {
     // as we can't access  javascript of site when httponly cookies are used.
 
     // for making MyCourse Protected route
-    const redirectTo = new URL(request.url).searchParams.get("redirectTo");
+    const redirectTo =
+      new URL(request.url).searchParams.get("redirectTo") || "/";
     console.log("redirectTo : ", redirectTo);
 
     return redirect(redirectTo);
@@ -108,6 +112,9 @@ export async function loginAction({ request, params }) {
 }
 
 export default function Login() {
+  // const parentRouteData = useRouteLoaderData("parentRoute");
+  // console.log("parentRouteData Login : ", parentRouteData);
+
   const data = useActionData(); //useActionData() is a hook provided by
   // React Router (v6.4 and above), and it's used in loader/action-based data fetching
   //  — typically when working with form submissions in a route.
@@ -127,7 +134,7 @@ export default function Login() {
   // This object becomes accessible in the component via useActionData()
   // so you can show error messages to the user.
 
-  console.log(data);
+  console.log("useActionData : ", data);
 
   const location = useLocation(); // to bring the `login?redirectTo=${redirectTo}` to this file.
   console.log("location : ", location);
@@ -141,7 +148,7 @@ export default function Login() {
     <div>
       {/* <Form method="POST"></Form>       OR*/}
       <Form method="post" action={loginURL} replace>
-        {/* this "replace" attribute helps in removing login page in back arrow histor, if the use login successfully and brings you to a page before then login screen */}
+        {/* this "replace" attribute helps in removing login page in back arrow history, if the use login successfully and brings you to a page before then login screen */}
 
         <h3>Login Page</h3>
         <div>
